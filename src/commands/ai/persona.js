@@ -16,11 +16,6 @@ function formatCurrentPersona(persona) {
 }
 
 function buildPersonaEmbed(personas, activePersona) {
-  const lines = personas.map((persona) => {
-    const activeMarker = persona.id === activePersona?.id ? " [active]" : "";
-    return `- ${persona.id}${activeMarker}: ${persona.name} - ${persona.description}`;
-  });
-
   return new EmbedBuilder()
     .setTitle("Persona picker")
     .setColor(0x2b2b2b)
@@ -29,8 +24,7 @@ function buildPersonaEmbed(personas, activePersona) {
         formatCurrentPersona(activePersona),
         "",
         "Pick a persona below to switch instantly.",
-        "",
-        ...lines,
+        `Available personas: ${personas.length}`,
       ].join("\n"),
     );
 }
@@ -97,6 +91,14 @@ export default {
       }
 
       const action = args[0].toLowerCase();
+
+      if (
+        ["current", "status", "now", "active", "who", "me"].includes(action)
+      ) {
+        await message.reply(formatCurrentPersona(activePersona));
+        return;
+      }
+
       if (["default", "reset", "clear"].includes(action)) {
         clearUserPersona(message.author.id);
         clearUserContext(message.author.id);
