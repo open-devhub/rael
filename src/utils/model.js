@@ -10,6 +10,13 @@ export const MODELS = [
     description: "General purpose model with strong reasoning.",
     aliases: ["gpt-oss", "oss", "gpt-oss-120b"],
   },
+    {
+    id: "llama-3.3-70b-versatile",
+    name: "llama-3.3",
+    provider: "groq",
+    description: "General purpose model with meta intelligence.",
+    aliases: ["llama", "os", "llama-3.3"],
+  },
   {
     id:"poolside/laguna-xs.2:free",
     name: "Laguna XS.2",
@@ -25,25 +32,18 @@ export const MODELS = [
     aliases: ["deepseek", "v4", "flash"],
   },
   {
-    id: "google/gemma-4-31b-it:free",
-    name: "Gemma 4 31B IT",
-    provider: "openrouter",
-    description: "Balanced responses with solid instruction tuning.",
-    aliases: ["gemma", "gemma4", "31b"],
+    id:"nex-agi/nex-n2-pro:free",
+    name:"Nex N2",
+    provider:"openrouter",
+    description:"a latest open source model great in coding.",
+    aliases : ["Nex-N2" , "Nex-AGI"]
   },
   {
-    id: "arcee-ai/trinity-large-thinking:free",
-    name: "Trinity Large Thinking",
-    provider: "openrouter",
-    description: "Reasoning-heavy style with longer thoughts.",
-    aliases: ["trinity", "arcee"],
-  },
-  {
-    id: "baidu/cobuddy:free",
-    name: "CoBuddy",
+    id: "nvidia/nemotron-3-ultra-550b-a55b:free",
+    name: "Nemotron",
     provider: "openrouter",
     description: "Lightweight assistant for everyday tasks.",
-    aliases: ["cobuddy", "baidu"],
+    aliases: ["nemotron", "nvidia"],
   },
 ];
 

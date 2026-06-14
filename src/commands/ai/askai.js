@@ -10,6 +10,7 @@ import {
 } from "../../utils/chat-context.js";
 import { DEFAULT_MODEL_ID, getUserModel } from "../../utils/model.js";
 import { getUserPersonaPrompt } from "../../utils/persona.js";
+import { recordUsage } from "../../utils/user-stats.js";
 const MAX_QUESTION_CHARS = 1000;
 
 const REFUSAL_MESSAGE =
@@ -216,6 +217,22 @@ export default {
       if (!usedResetContext) {
         updateUserContext(message.author.id, question, answer);
       }
+
+      // Track token usage for the `$stats` card. Best-effort: never block or
+      // fail the response if persistence has an issue.
+      const totalTokens = Number(result?.totalUsage?.totalTokens) || 0;
+      recordUsage(
+        message.author.id,
+        {
+          username: message.author.username,
+          displayName: message.member?.displayName || message.author.username,
+          avatar: message.author.displayAvatarURL?.({
+            extension: "png",
+            size: 256,
+          }),
+        },
+        totalTokens,
+      ).catch((err) => console.error("Failed to record usage stats:", err));
     } catch (err) {
       console.log(err);
 
