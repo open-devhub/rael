@@ -39,11 +39,11 @@ export const MODELS = [
     aliases : ["Nex-N2" , "Nex-AGI"]
   },
   {
-    id: "baidu/cobuddy:free",
-    name: "CoBuddy",
+    id: "nvidia/nemotron-3-ultra-550b-a55b:free",
+    name: "Nemotron",
     provider: "openrouter",
     description: "Lightweight assistant for everyday tasks.",
-    aliases: ["cobuddy", "baidu"],
+    aliases: ["nemotron", "nvidia"],
   },
 ];
 
