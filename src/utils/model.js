@@ -10,6 +10,13 @@ export const MODELS = [
     description: "General purpose model with strong reasoning.",
     aliases: ["gpt-oss", "oss", "gpt-oss-120b"],
   },
+    {
+    id: "llama-3.3-70b-versatile",
+    name: "llama-3.3",
+    provider: "groq",
+    description: "General purpose model with meta intelligence.",
+    aliases: ["llama", "os", "llama-3.3"],
+  },
   {
     id:"poolside/laguna-xs.2:free",
     name: "Laguna XS.2",
