@@ -1,2 +1,5 @@
 node_modules/
 .env
+
+# Persistent user stats
+data/
