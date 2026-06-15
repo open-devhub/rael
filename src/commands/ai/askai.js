@@ -210,7 +210,10 @@ export default {
       }
 
       for (const part of messageParts) {
-        await message.channel.send(part);
+        await message.channel.send({
+          content: part,
+          allowedMentions: { parse: [] },
+        });
       }
 
       const usedResetContext = wasToolUsed(result, "resetContext");
@@ -327,10 +330,6 @@ function applyOutputGuardrails(answer) {
     return "I could not generate a response.";
   }
 
-  output = output.replace(/@everyone/gi, "@ everyone");
-  output = output.replace(/@here/gi, "@ here");
-  output = output.replace(/<@&(\d+)>/g, "@role");
-  output = output.replace(/<@!?(\d+)>/g, "@user");
   return output;
 }
 
@@ -349,7 +348,7 @@ function getBestAnswer(result) {
 }
 
 function buildSystemPrompt(persona, personaPrompt) {
-  const sections = [BASE_SYSTEM_PROMPT , SERVER_INFO];
+  const sections = [BASE_SYSTEM_PROMPT, SERVER_INFO];
 
   if (persona?.name) {
     sections.push(`Active persona: ${persona.name} (${persona.id})`);
