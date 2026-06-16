@@ -1,6 +1,6 @@
 {
   "name": "rael",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "AI-powered Discord bot supporting multiple models, image understanding, live market data, and visual usage tracking",
   "main": "src/index.js",
   "type": "module",

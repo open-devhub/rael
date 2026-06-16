@@ -1,5 +1,11 @@
 # Change Log
 
+## `v1.1.0` - 16/06/2026
+
+### Added
+
+- Image Generation: Integrated Pollinations.ai (using the Flux model) to allow users to generate images from text prompts.
+
 ## `v1.0.0` - 16/06/2026
 
 ### Added
