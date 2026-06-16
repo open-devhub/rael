@@ -107,6 +107,9 @@ export default {
   description: "Ask the AI model",
   aliases: ["ai"],
   callback: async (client, message, args) => {
+    // Declared here so the catch block can clean up the "Reading image..."
+    // placeholder if generation fails after it was already posted.
+    let loadingMessage = null;
     try {
       if (message.author.bot) return;
       await message.channel.sendTyping();
@@ -188,6 +191,18 @@ export default {
       const modelProvider =
         selectedModel.provider === "openrouter" ? openRouter : groq;
 
+      // Reading an image can take a while. Send an immediate placeholder so the
+      // user knows the bot is working, then edit it with the real answer below.
+      if (imageAttachments.length) {
+        loadingMessage = await message
+          .reply(
+            imageAttachments.length > 1
+              ? `Reading ${imageAttachments.length} images... this can take a few seconds.`
+              : "Reading image... this can take a few seconds.",
+          )
+          .catch(() => null);
+      }
+
       const result = await generateText({
         model: modelProvider(selectedModel.id),
         system: systemPrompt,
@@ -228,8 +243,23 @@ export default {
         messageParts.push(currentPart.trim());
       }
 
-      for (const part of messageParts) {
-        await message.channel.send(part);
+      for (const [index, part] of messageParts.entries()) {
+        // Reuse the "Reading image..." placeholder for the first chunk so it
+        // transforms into the answer in place instead of leaving a stale note.
+        if (index === 0 && loadingMessage) {
+          await loadingMessage.edit(part).catch(async () => {
+            await message.channel.send(part);
+          });
+        } else {
+          await message.channel.send(part);
+        }
+      }
+
+      // If the model returned nothing to display, clean up the placeholder.
+      if (!messageParts.length && loadingMessage) {
+        await loadingMessage
+          .edit("I could not generate a response.")
+          .catch(() => null);
       }
 
       // If the AI looked up a stock, render and attach a visual price card.
@@ -259,14 +289,19 @@ export default {
       console.log(err);
 
       const errorMessage = String(err?.message || err);
-      if (errorMessage.includes("EXA_API_KEY")) {
-        await message.reply(
-          "Search is not configured yet. Add EXA_API_KEY to your environment and restart the bot.",
-        );
-        return;
-      }
+      const replyText = errorMessage.includes("EXA_API_KEY")
+        ? "Search is not configured yet. Add EXA_API_KEY to your environment and restart the bot."
+        : "Something went wrong while generating a response.";
 
-      await message.reply("Something went wrong while generating a response.");
+      // Reuse the "Reading image..." placeholder for the error if it exists so
+      // the user isn't left staring at a loading message that never resolves.
+      if (loadingMessage) {
+        await loadingMessage.edit(replyText).catch(async () => {
+          await message.reply(replyText);
+        });
+      } else {
+        await message.reply(replyText);
+      }
     }
   },
 };
