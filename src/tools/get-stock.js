@@ -7,7 +7,9 @@ const CHART_POINTS = 30;
 function getApiKey() {
   const key = process.env.TWELVE_DATA_API_KEY;
   if (!key) {
-    throw new Error("TWELVE_DATA_API_KEY is missing. Set it in your environment.");
+    throw new Error(
+      "TWELVE_DATA_API_KEY is missing. Set it in your environment.",
+    );
   }
   return key;
 }
@@ -21,7 +23,9 @@ async function twelveDataFetch(endpoint, params) {
 
   const res = await fetch(url, { headers: { Accept: "application/json" } });
   if (!res.ok) {
-    throw new Error(`Twelve Data request failed (${res.status}) for ${endpoint}.`);
+    throw new Error(
+      `Twelve Data request failed (${res.status}) for ${endpoint}.`,
+    );
   }
 
   const data = await res.json();
@@ -45,7 +49,9 @@ async function twelveDataFetch(endpoint, params) {
  * }>}
  */
 export async function fetchStock(rawSymbol) {
-  const symbol = String(rawSymbol || "").trim().toUpperCase();
+  const symbol = String(rawSymbol || "")
+    .trim()
+    .toUpperCase();
   if (!symbol) {
     throw new Error("No symbol provided.");
   }

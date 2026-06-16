@@ -30,12 +30,14 @@ function buildPersonaEmbed(personas, activePersona) {
     );
 }
 
-function buildPersonaSelect(personas, activePersonaId, userId, disabled = false) {
+function buildPersonaSelect(
+  personas,
+  activePersonaId,
+  userId,
+  disabled = false,
+) {
   const options = personas.map((persona) => ({
-    label:
-      persona.id === activePersonaId
-        ? `* ${persona.name}`
-        : persona.name,
+    label: persona.id === activePersonaId ? `* ${persona.name}` : persona.name,
     value: persona.id,
     description: persona.description.slice(0, 100),
   }));

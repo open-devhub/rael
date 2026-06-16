@@ -17,7 +17,9 @@ export default {
 
       if (!stats.hasData) {
         const who =
-          target.id === message.author.id ? "You have" : `${target.username} has`;
+          target.id === message.author.id
+            ? "You have"
+            : `${target.username} has`;
         await message.reply(
           `${who} no AI usage recorded yet. Ask me something with \`,\` or \`$ai\` and your stats will start tracking.`,
         );

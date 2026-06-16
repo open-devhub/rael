@@ -10,9 +10,18 @@ let fontsRegistered = false;
 function ensureFonts() {
   if (fontsRegistered) return;
   try {
-    GlobalFonts.registerFromPath(path.join(FONTS_DIR, "Inter-Regular.ttf"), "Inter");
-    GlobalFonts.registerFromPath(path.join(FONTS_DIR, "Inter-SemiBold.ttf"), "InterSemiBold");
-    GlobalFonts.registerFromPath(path.join(FONTS_DIR, "Inter-Bold.ttf"), "InterBold");
+    GlobalFonts.registerFromPath(
+      path.join(FONTS_DIR, "Inter-Regular.ttf"),
+      "Inter",
+    );
+    GlobalFonts.registerFromPath(
+      path.join(FONTS_DIR, "Inter-SemiBold.ttf"),
+      "InterSemiBold",
+    );
+    GlobalFonts.registerFromPath(
+      path.join(FONTS_DIR, "Inter-Bold.ttf"),
+      "InterBold",
+    );
     fontsRegistered = true;
   } catch (err) {
     console.error("Failed to register Inter fonts for stats card:", err);
@@ -58,7 +67,10 @@ function cellColor(value, max) {
   if (max <= 0) return COLORS.ramp[0];
   // Map intensity into 4 buckets using a sqrt curve so low activity is visible.
   const ratio = Math.sqrt(value / max);
-  const index = Math.min(COLORS.ramp.length - 1, Math.floor(ratio * COLORS.ramp.length));
+  const index = Math.min(
+    COLORS.ramp.length - 1,
+    Math.floor(ratio * COLORS.ramp.length),
+  );
   return COLORS.ramp[index];
 }
 
@@ -116,7 +128,13 @@ export async function renderStatsCard(opts) {
 
   ctx.save();
   ctx.beginPath();
-  ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+  ctx.arc(
+    avatarX + avatarSize / 2,
+    avatarY + avatarSize / 2,
+    avatarSize / 2,
+    0,
+    Math.PI * 2,
+  );
   ctx.closePath();
   ctx.clip();
   if (avatar) {
@@ -131,7 +149,11 @@ export async function renderStatsCard(opts) {
   ctx.fillStyle = COLORS.text;
   ctx.font = "44px InterBold";
   ctx.textBaseline = "alphabetic";
-  ctx.fillText(truncate(ctx, opts.displayName || "Unknown", 460), textX, avatarY + 52);
+  ctx.fillText(
+    truncate(ctx, opts.displayName || "Unknown", 460),
+    textX,
+    avatarY + 52,
+  );
 
   ctx.fillStyle = COLORS.muted;
   ctx.font = "26px Inter";
