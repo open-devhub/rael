@@ -13,6 +13,11 @@ import { getUserPersonaPrompt } from "../../utils/persona.js";
 import { recordUsage } from "../../utils/user-stats.js";
 const MAX_QUESTION_CHARS = 1000;
 
+// When a message contains image attachments we bypass the user's selected
+// model and route to a multimodal model that can actually read images.
+const VISION_MODEL_ID = "nex-agi/nex-n2-pro:free";
+const MAX_IMAGE_ATTACHMENTS = 4;
+
 const REFUSAL_MESSAGE =
   "I can’t help with that request due to safety restrictions.\n" +
   "Try something like:\n" +
@@ -105,7 +110,10 @@ export default {
       await message.channel.sendTyping();
 
       const question = args.join(" ");
-      if (!question) {
+      const imageAttachments = getImageAttachments(message);
+
+      // Allow image-only messages (no text) since the model can describe them.
+      if (!question && !imageAttachments.length) {
         await message.reply(
           [
             "Please provide a question.",
@@ -148,16 +156,24 @@ export default {
         return;
       }
 
-      const conversation = await buildConversation(message, question);
+      const conversation = await buildConversation(
+        message,
+        question,
+        imageAttachments,
+      );
       const { persona, prompt: personaPrompt } = getUserPersonaPrompt(
         message.author.id,
       );
       const systemPrompt = buildSystemPrompt(persona, personaPrompt);
 
-      const selectedModel = getUserModel(message.author.id) || {
-        id: DEFAULT_MODEL_ID,
-        provider: "groq",
-      };
+      // Images require a multimodal model, so override the user's choice and
+      // route through OpenRouter's vision-capable model instead.
+      const selectedModel = imageAttachments.length
+        ? { id: VISION_MODEL_ID, provider: "openrouter" }
+        : getUserModel(message.author.id) || {
+            id: DEFAULT_MODEL_ID,
+            provider: "groq",
+          };
       if (
         selectedModel.provider === "openrouter" &&
         !process.env.OPENROUTER_API_KEY
@@ -249,7 +265,7 @@ export default {
   },
 };
 
-async function buildConversation(message, question) {
+async function buildConversation(message, question, imageAttachments = []) {
   const conversation = [];
 
   const existingMessages = getUserContext(message.author.id);
@@ -262,11 +278,44 @@ async function buildConversation(message, question) {
     conversation.push(replyContext);
   }
 
-  conversation.push({
-    role: "user",
-    content: `Answer the following question **only if it is a safe, appropriate question**.\n${question}`,
-  });
+  const promptText = `Answer the following question **only if it is a safe, appropriate question**.\n${
+    question || "Describe and analyze the attached image(s)."
+  }`;
+
+  if (imageAttachments.length) {
+    // Multimodal user turn: text prompt + image parts (AI SDK v6 format).
+    conversation.push({
+      role: "user",
+      content: [
+        { type: "text", text: promptText },
+        ...imageAttachments.map((url) => ({
+          type: "image",
+          image: new URL(url),
+        })),
+      ],
+    });
+  } else {
+    conversation.push({
+      role: "user",
+      content: promptText,
+    });
+  }
+
   return conversation;
+}
+
+function getImageAttachments(message) {
+  if (!message.attachments?.size) return [];
+
+  return [...message.attachments.values()]
+    .filter((attachment) => {
+      const type = attachment.contentType || "";
+      if (type.startsWith("image/")) return true;
+      // Fallback for attachments without a contentType set by Discord.
+      return /\.(png|jpe?g|gif|webp)$/i.test(attachment.name || "");
+    })
+    .slice(0, MAX_IMAGE_ATTACHMENTS)
+    .map((attachment) => attachment.url);
 }
 
 async function getReplyContext(message) {
