@@ -54,8 +54,6 @@ $resetai
 | `persona` | `personaai`, `mode`, `character`         | Manage or view AI personas                   |
 | `model`   | `setmodel`, `models`                     | View or switch the active AI model           |
 | `resetai` | `aiclear`, `clearai`, `aireset`, `reset` | Clears AI conversation context               |
-| `vision`  | `see`, `image`                           | Analyzes an attached image                   |
-| `search`  | `websearch`, `lookup`                    | Performs a web search and returns results    |
 | `stock`   | `stocks`, `chart`                        | Displays a live stock graph                  |
 | `usage`   | `tokens`, `tokenusage`                   | Displays token usage with a visual breakdown |
 | `help`    | none                                     | Displays available commands and usage        |

@@ -1,0 +1,64 @@
+name: PR Commit Auto Labeler
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - edited
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  label-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Label PR from commit messages
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pull_number = context.payload.pull_request.number;
+
+            const commits = await github.paginate(
+              github.rest.pulls.listCommits,
+              {
+                owner,
+                repo,
+                pull_number,
+                per_page: 100,
+              }
+            );
+
+            const labels = new Set();
+
+            const conventionalCommitRegex =
+              /^(chore|docs|feat|fix|perf|refactor|style|test)(\([^)]+\))?(!)?:\s/i;
+
+            for (const commit of commits) {
+              const message = commit.commit.message.split("\n")[0];
+
+              const match = message.match(conventionalCommitRegex);
+
+              if (!match) continue;
+
+              labels.add(match[1].toLowerCase());
+            }
+
+            if (labels.size === 0) {
+              core.info("No matching conventional commit types found.");
+              return;
+            }
+
+            await github.rest.issues.addLabels({
+              owner,
+              repo,
+              issue_number: pull_number,
+              labels: [...labels],
+            });
+
+            core.info(`Added labels: ${[...labels].join(", ")}`);

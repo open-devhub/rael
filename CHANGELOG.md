@@ -1,5 +1,16 @@
 # Change Log
 
+## `v1.1.0` - 17/06/2026
+
+### Added
+
+- Session-based context management system
+- Session-based context redesign specification
+
+### Fixed
+
+- Removed redundant `clearUserContext` calls
+
 ## `v1.0.0` - 16/06/2026
 
 ### Added
