@@ -10,6 +10,7 @@
 ### Fixed
 
 - Removed redundant `clearUserContext` calls
+- Removed large instruction block to reduce token usage
 
 ## `v1.0.0` - 16/06/2026
 
