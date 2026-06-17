@@ -104,8 +104,7 @@ function truncate(ctx, text, maxWidth) {
  * @param {boolean} opts.active
  * @param {number}  opts.tokensUsed
  * @param {number}  opts.tokenBudget
- * @param {number} [opts.timeRemainingMs] // session: ms until expiry if no activity
- * @param {number} [opts.idleMs]          // total session idle window (e.g., 1h)
+ * @param {number} [opts.timeRemainingMs] // ms until session expiry
  * @param {number} [opts.messageCount]
  * @param {number} [opts.imageCount]
  * @param {boolean}[opts.overBudget]

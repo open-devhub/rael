@@ -13,6 +13,7 @@ import {
   isOverBudget,
   recordTokens,
   sessionResetsAt,
+  SESSION_TOKEN_BUDGET,
 } from "../../utils/chat-context.js";
 import { DEFAULT_MODEL_ID, getUserModel } from "../../utils/model.js";
 import { getUserPersonaPrompt } from "../../utils/persona.js";
@@ -151,12 +152,12 @@ export default {
       // Pre-call budget check: if the session is already exhausted, refuse
       // without calling the model and without touching session state.
       if (isOverBudget(message.author.id)) {
-        const resetsAt = sessionResetsAt(message.author.id);
-        await message.reply(buildLimitReachedMessage(resetsAt));
+        const remainingMs = sessionResetsAt(message.author.id);
+        await message.reply(buildLimitReachedMessage(remainingMs));
         return;
       }
 
-      // Touch the session so the sliding 1h clock advances even when the
+      // Touch the session so the session timer is initialized even when the
       // attachments fail to download. getOrCreateSession is idempotent.
       getOrCreateSession(message.author.id);
 
@@ -317,12 +318,12 @@ export default {
   },
 };
 
-function buildLimitReachedMessage(resetsAt) {
-  if (!resetsAt) {
-    return "Session limit reached (20,000 tokens). Your session will reset after 1 hour of inactivity.";
+function buildLimitReachedMessage(remainingMs) {
+  if (!remainingMs) {
+    return `Session limit reached (${SESSION_TOKEN_BUDGET.toLocaleString()} tokens). Your session will reset when this session window ends.`;
   }
-  const minutes = Math.max(1, Math.ceil((resetsAt - Date.now()) / 60_000));
-  return `Session limit reached (20,000 tokens). Your session resets after 1 hour of inactivity — about ${minutes} minute${minutes === 1 ? "" : "s"} from now if you stop messaging.`;
+  const minutes = Math.max(1, Math.ceil(remainingMs / 60_000));
+  return `Session limit reached (${SESSION_TOKEN_BUDGET.toLocaleString()} tokens). Your session resets in about ${minutes} minute${minutes === 1 ? "" : "s"}.`;
 }
 
 async function downloadImages(attachments) {

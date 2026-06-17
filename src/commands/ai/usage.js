@@ -32,7 +32,6 @@ export default {
         timeRemainingMs: snapshot.active
           ? Math.max(0, snapshot.expiresAt - Date.now())
           : null,
-        idleMs: snapshot.idleMs,
         messageCount: snapshot.messageCount ?? 0,
         imageCount: snapshot.imageCount ?? 0,
         overBudget: !!snapshot.overBudget,

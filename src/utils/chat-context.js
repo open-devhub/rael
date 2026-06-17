@@ -1,17 +1,17 @@
 // Session-based context store.
 //
-// One session per user, in-memory only. A session ends after 1 hour of
-// inactivity (sliding clock) or when its token budget is exhausted. Hitting
-// the cap rejects further messages until the inactivity window expires; there
-// is no manual reset path.
+// One session per user, in-memory only. A session lasts for a fixed duration
+// from creation or until its token budget is exhausted. Hitting the cap rejects
+// further messages until the session duration elapses; there is no manual reset
+// path.
 
-export const SESSION_IDLE_MS = 60 * 60 * 1000;
-export const SESSION_TOKEN_BUDGET = 20_000;
+export const SESSION_DURATION_MS = 2 * 60 * 60 * 1000;
+export const SESSION_TOKEN_BUDGET = 200_000;
 
 const sessions = new Map();
 
 function isExpired(session, now = Date.now()) {
-  return now - session.lastActivityAt > SESSION_IDLE_MS;
+  return now - session.startedAt > SESSION_DURATION_MS;
 }
 
 function createSession(now) {
@@ -27,7 +27,7 @@ function createSession(now) {
 }
 
 // Returns the live session, creating a fresh one if none exists or the
-// existing one has expired. Always bumps lastActivityAt to now.
+// existing one has expired.
 export function getOrCreateSession(userId) {
   const now = Date.now();
   const existing = sessions.get(userId);
@@ -56,6 +56,7 @@ export function getActiveSession(userId) {
 // parts reference them by index.
 export function appendUserTurn(userId, { text, images = [] }) {
   const session = getOrCreateSession(userId);
+  session.lastActivityAt = Date.now();
   const parts = [];
   if (text) parts.push({ type: "text", text });
 
@@ -84,6 +85,7 @@ export function appendUserTurn(userId, { text, images = [] }) {
 
 export function appendAssistantTurn(userId, text) {
   const session = getOrCreateSession(userId);
+  session.lastActivityAt = Date.now();
   const messageId = `m_${session.nextMessageId++}`;
   session.messages.push({
     id: messageId,
@@ -106,12 +108,12 @@ export function isOverBudget(userId) {
   return session.tokensUsed >= SESSION_TOKEN_BUDGET;
 }
 
-// Epoch ms when the current session will expire if no further messages
-// arrive. Null if no active session.
+// Milliseconds remaining until the current session expires. Null if no active
+// session.
 export function sessionResetsAt(userId) {
   const session = getActiveSession(userId);
   if (!session) return null;
-  return session.lastActivityAt + SESSION_IDLE_MS;
+  return Math.max(0, session.startedAt + SESSION_DURATION_MS - Date.now());
 }
 
 export function getImageBytes(userId, index) {
@@ -131,17 +133,17 @@ export function getSessionSnapshot(userId) {
       active: false,
       tokensUsed: 0,
       tokenBudget: SESSION_TOKEN_BUDGET,
-      idleMs: SESSION_IDLE_MS,
+      durationMs: SESSION_DURATION_MS,
     };
   }
   return {
     active: true,
     startedAt: session.startedAt,
     lastActivityAt: session.lastActivityAt,
-    expiresAt: session.lastActivityAt + SESSION_IDLE_MS,
+    expiresAt: session.startedAt + SESSION_DURATION_MS,
     tokensUsed: session.tokensUsed,
     tokenBudget: SESSION_TOKEN_BUDGET,
-    idleMs: SESSION_IDLE_MS,
+    durationMs: SESSION_DURATION_MS,
     messageCount: session.messages.length,
     imageCount: session.images.length,
     overBudget: session.tokensUsed >= SESSION_TOKEN_BUDGET,
