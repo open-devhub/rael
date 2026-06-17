@@ -29,7 +29,8 @@ const STOCK_QUERY_PATTERN =
 
 // When a message contains image attachments we bypass the user's selected
 // model and route to a multimodal model that can actually read images.
-const VISION_MODEL_ID = "nex-agi/nex-n2-pro:free";
+const VISION_MODEL_ID = "meta-llama/llama-4-scout-17b-16e-instruct";
+const VISION_MODEL_PROVIDER = "groq";
 const MAX_IMAGE_ATTACHMENTS = 4;
 
 const REFUSAL_MESSAGE =
@@ -149,24 +150,24 @@ export default {
       );
 
       // Images require a multimodal model, so override the user's choice and
-      // route through OpenRouter's vision-capable model instead.
+      // route through Groq's vision-capable model instead.
       const selectedModel = downloadedImages.length
-        ? { id: VISION_MODEL_ID, provider: "openrouter" }
+        ? { id: VISION_MODEL_ID, provider: VISION_MODEL_PROVIDER }
         : getUserModel(message.author.id) || {
             id: DEFAULT_MODEL_ID,
             provider: "groq",
           };
       if (
-        selectedModel.provider === "openrouter" &&
-        !process.env.OPENROUTER_API_KEY
+        selectedModel.provider === "groq" &&
+        !process.env.GROQ_API_KEY
       ) {
         await message.reply(
-          "OpenRouter is not configured yet. Add OPENROUTER_API_KEY to your environment and restart the bot.",
+          "Groq is not configured yet. Add GROQ_API_KEY to your environment and restart the bot.",
         );
         return;
       }
       const modelProvider =
-        selectedModel.provider === "openrouter" ? openRouter : groq;
+        selectedModel.provider === "groq" ? groq : openRouter;
 
       // Reading an image can take a while. Send an immediate placeholder so the
       // user knows the bot is working, then edit it with the real answer below.
