@@ -12,8 +12,8 @@ import {
   getOrCreateSession,
   isOverBudget,
   recordTokens,
-  sessionResetsAt,
   SESSION_TOKEN_BUDGET,
+  sessionResetsAt,
 } from "../../utils/chat-context.js";
 import { DEFAULT_MODEL_ID, getUserModel } from "../../utils/model.js";
 import { getUserPersonaPrompt } from "../../utils/persona.js";
@@ -49,7 +49,7 @@ const BASE_SYSTEM_PROMPT = [
 
   "Tools: use when they add value. Stock/ticker questions → call stock tool (bot renders price card; give a conversational reply). Web search → official docs, primary sources; always include direct links; never fabricate sources. After any tool use, ALWAYS return a final user-facing answer.",
 
-  "Server: DevHub — Discord community for programmers and creators. Focus: programming help, debugging, code reviews, learning, projects. Tone: supportive, practical, concise. Invite: https://discord.gg/MuZFAeVHgp. Provide server info when asked.",
+  "Server: DevHub — Discord community for programmers and creators. Focus: programming help, debugging, code reviews, learning, projects. Tone: supportive, practical, concise. Invite: https://discord.gg/MuZFAeVHgp. Provide server info ONLY when explicitly asked.",
 ].join("\n");
 
 const BLOCKED_INTENT_PATTERNS = [
@@ -318,7 +318,8 @@ async function downloadImages(attachments) {
       const res = await fetch(att.url);
       if (!res.ok) continue;
       const buffer = Buffer.from(await res.arrayBuffer());
-      const mime = att.contentType || guessMimeFromName(att.name) || "image/png";
+      const mime =
+        att.contentType || guessMimeFromName(att.name) || "image/png";
       downloaded.push({ bytes: buffer, mime });
     } catch (err) {
       console.error("Failed to download image attachment:", err);
@@ -329,7 +330,9 @@ async function downloadImages(attachments) {
 
 function guessMimeFromName(name) {
   if (!name) return null;
-  const m = String(name).toLowerCase().match(/\.(png|jpe?g|gif|webp)$/);
+  const m = String(name)
+    .toLowerCase()
+    .match(/\.(png|jpe?g|gif|webp)$/);
   if (!m) return null;
   const ext = m[1] === "jpg" ? "jpeg" : m[1];
   return `image/${ext}`;

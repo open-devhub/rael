@@ -113,12 +113,13 @@ export function isOverBudget(userId) {
 export function sessionResetsAt(userId) {
   const session = getActiveSession(userId);
   if (!session) return null;
-export function sessionTimeRemaining(userId) {
-const session = getActiveSession(userId);
-if (!session) return null;
-return Math.max(0, session.startedAt + SESSION_DURATION_MS - Date.now());
+  return session.startedAt + SESSION_DURATION_MS;
 }
 
+export function sessionTimeRemaining(userId) {
+  const session = getActiveSession(userId);
+  if (!session) return null;
+  return Math.max(0, session.startedAt + SESSION_DURATION_MS - Date.now());
 }
 
 export function getImageBytes(userId, index) {
