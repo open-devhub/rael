@@ -38,10 +38,7 @@ function buildModelEmbed(models, activeModel) {
 
 function buildModelSelect(models, activeModelId, userId, disabled = false) {
   const options = models.map((model) => ({
-    label:
-      model.id === activeModelId
-        ? `* ${model.name}`
-        : model.name,
+    label: model.id === activeModelId ? `* ${model.name}` : model.name,
     value: model.id,
     description: `${model.provider} - ${model.description}`.slice(0, 100),
   }));
@@ -66,7 +63,10 @@ export default {
       const models = listAvailableModels();
       const activeModel = getUserModel(message.author.id);
 
-      if (!args.length || ["list", "ls", "all"].includes(args[0].toLowerCase())) {
+      if (
+        !args.length ||
+        ["list", "ls", "all"].includes(args[0].toLowerCase())
+      ) {
         const embed = buildModelEmbed(models, activeModel);
         const components = buildModelSelect(
           models,
@@ -141,9 +141,7 @@ export default {
       }
 
       await message.reply(
-        [
-          `Switched to ${selected.name} (${selected.id}).`,
-        ].join("\n"),
+        [`Switched to ${selected.name} (${selected.id}).`].join("\n"),
       );
     } catch (err) {
       console.error(err);

@@ -28,12 +28,14 @@ function buildPersonaEmbed(personas, activePersona) {
     );
 }
 
-function buildPersonaSelect(personas, activePersonaId, userId, disabled = false) {
+function buildPersonaSelect(
+  personas,
+  activePersonaId,
+  userId,
+  disabled = false,
+) {
   const options = personas.map((persona) => ({
-    label:
-      persona.id === activePersonaId
-        ? `* ${persona.name}`
-        : persona.name,
+    label: persona.id === activePersonaId ? `* ${persona.name}` : persona.name,
     value: persona.id,
     description: persona.description.slice(0, 100),
   }));
@@ -140,9 +142,7 @@ export default {
       }
 
       await message.reply(
-        [
-          `Switched to ${selected.name} (${selected.id}).`,
-        ].join("\n"),
+        [`Switched to ${selected.name} (${selected.id}).`].join("\n"),
       );
     } catch (err) {
       console.error(err);

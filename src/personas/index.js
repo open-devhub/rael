@@ -42,7 +42,8 @@ export const PERSONAS = [
   {
     id: "interviewer",
     name: "Interview Buddy",
-    description: "Mock interviewer for DSA, system design, and behavior rounds.",
+    description:
+      "Mock interviewer for DSA, system design, and behavior rounds.",
     fileName: "interviewer.md",
     aliases: ["interview", "mock", "practice"],
   },

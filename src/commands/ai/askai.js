@@ -5,6 +5,7 @@ import latexToUnicode from "latex-to-unicode";
 import { createGetImageTool } from "../../tools/get-image.js";
 import { searchTool } from "../../tools/get-search.js";
 import { fetchStock, stockTool } from "../../tools/get-stock.js";
+import { react } from "../../tools/react.js";
 import { groq, openRouter } from "../../utils/ai.js";
 import {
   appendAssistantTurn,
@@ -23,13 +24,9 @@ import { recordUsage } from "../../utils/user-stats.js";
 
 const MAX_QUESTION_CHARS = 1000;
 
-// Heuristic: only register the stock tool when the message looks like a
-// financial/ticker query. Saves ~50 tokens of schema on every other call.
 const STOCK_QUERY_PATTERN =
   /\b(stock|ticker|share|shares|price|market\s*cap|nyse|nasdaq|tsx|asx|etf|dividend|\$[A-Z]{1,5})\b/i;
 
-// When a message contains image attachments we bypass the user's selected
-// model and route to a multimodal model that can actually read images.
 const VISION_MODEL_ID = "meta-llama/llama-4-scout-17b-16e-instruct";
 const VISION_MODEL_PROVIDER = "groq";
 const MAX_IMAGE_ATTACHMENTS = 4;
@@ -72,8 +69,6 @@ export default {
   description: "Ask the AI model",
   aliases: ["ai"],
   callback: async (client, message, args) => {
-    // Declared here so the catch block can clean up the "Reading image..."
-    // placeholder if generation fails after it was already posted.
     let loadingMessage = null;
     try {
       if (message.author.bot) return;
@@ -82,7 +77,6 @@ export default {
       const question = args.join(" ");
       const imageAttachments = getImageAttachments(message);
 
-      // Allow image-only messages (no text) since the model can describe them.
       if (!question && !imageAttachments.length) {
         await message.reply(
           [
@@ -110,16 +104,12 @@ export default {
         return;
       }
 
-      // Pre-call budget check: if the session is already exhausted, refuse
-      // without calling the model and without touching session state.
       if (isOverBudget(message.author.id)) {
         const remainingMs = sessionResetsAt(message.author.id);
         await message.reply(buildLimitReachedMessage(remainingMs));
         return;
       }
 
-      // Touch the session so the session timer is initialized even when the
-      // attachments fail to download. getOrCreateSession is idempotent.
       getOrCreateSession(message.author.id);
 
       let downloadedImages = [];
@@ -144,14 +134,26 @@ export default {
       const { persona, prompt: personaPrompt } = getUserPersonaPrompt(
         message.author.id,
       );
+
+      const isReplyToBot = message.reference?.messageId ? true : false;
+      const mentionsBot = message.mentions.has(client.user);
+      const currentContext = {
+        channelId: message.channelId,
+        messageId: message.id,
+        interactionType: isReplyToBot
+          ? "REPLY_TO_YOU"
+          : mentionsBot
+            ? "DIRECT_MENTION"
+            : "COMMAND_INVOCATION",
+      };
+
       const systemPrompt = buildSystemPrompt(
         persona,
         personaPrompt,
         (activeSession?.images?.length ?? 0) > 0,
+        currentContext,
       );
 
-      // Images require a multimodal model, so override the user's choice and
-      // route through Groq's vision-capable model instead.
       const selectedModel = downloadedImages.length
         ? { id: VISION_MODEL_ID, provider: VISION_MODEL_PROVIDER }
         : getUserModel(message.author.id) || {
@@ -167,8 +169,6 @@ export default {
       const modelProvider =
         selectedModel.provider === "groq" ? groq : openRouter;
 
-      // Reading an image can take a while. Send an immediate placeholder so the
-      // user knows the bot is working, then edit it with the real answer below.
       if (downloadedImages.length) {
         loadingMessage = await message
           .reply(
@@ -222,8 +222,6 @@ export default {
       }
 
       for (const [index, part] of messageParts.entries()) {
-        // Reuse the "Reading image..." placeholder for the first chunk so it
-        // transforms into the answer in place instead of leaving a stale note.
         if (index === 0 && loadingMessage) {
           await loadingMessage.edit(part).catch(async () => {
             await message.channel.send(part);
@@ -233,24 +231,19 @@ export default {
         }
       }
 
-      // If the model returned nothing to display, clean up the placeholder.
       if (!messageParts.length && loadingMessage) {
         await loadingMessage
           .edit("I could not generate a response.")
           .catch(() => null);
       }
 
-      // If the AI looked up a stock, render and attach a visual price card.
       await sendStockCards(message, result);
 
-      // Persist the assistant reply into the session and account tokens.
       appendAssistantTurn(message.author.id, answer);
 
       const totalTokens = Number(result?.totalUsage?.totalTokens) || 0;
       recordTokens(message.author.id, totalTokens);
 
-      // Track token usage for the `$stats` card. Best-effort: never block or
-      // fail the response if persistence has an issue.
       recordUsage(
         message.author.id,
         {
@@ -271,8 +264,6 @@ export default {
         ? "Search is not configured yet. Add EXA_API_KEY to your environment and restart the bot."
         : "Something went wrong while generating a response.";
 
-      // Reuse the "Reading image..." placeholder for the error if it exists so
-      // the user isn't left staring at a loading message that never resolves.
       if (loadingMessage) {
         await loadingMessage.edit(replyText).catch(async () => {
           await message.reply(replyText);
@@ -284,17 +275,13 @@ export default {
   },
 };
 
-// Builds the tools object for this specific call, omitting tools that are
-// not relevant to avoid sending unnecessary schema tokens to the model.
 function buildActiveTools(userId, question, session) {
-  const tools = { search: searchTool };
+  const tools = { search: searchTool, react: react };
 
   if (STOCK_QUERY_PATTERN.test(question)) {
     tools.stock = stockTool;
   }
 
-  // Only register getImage when the session has stored images the model
-  // could need to re-examine via tool call.
   if (session?.images?.length > 0) {
     tools.getImage = createGetImageTool(userId);
   }
@@ -337,25 +324,12 @@ function guessMimeFromName(name) {
   return `image/${ext}`;
 }
 
-// Build the AI SDK `messages` array from the user's session.
-//
-// History rendering rule (inline-current + placeholder-older):
-//   - The current turn (last user message in the session) sends its images
-//     inline as multimodal parts.
-//   - Every earlier user turn renders its `image_ref` parts as text
-//     placeholders like `[image #N — mime, Xmin ago]`. The model can pull
-//     them back via the getImage tool.
-//   - Discord reply-to-bot context is appended as a transient assistant
-//     message at the end of history (same as before) — not persisted.
 async function buildConversation(message, userId, currentImages, currentRefs) {
   const session = getActiveSession(userId);
   const conversation = [];
   const now = Date.now();
 
   const allMessages = session?.messages || [];
-  // The last entry is the just-appended current user turn; everything before
-  // it is "prior" history. Cap at last 10 prior messages to prevent
-  // unbounded token growth on long sessions.
   const MAX_HISTORY = 10;
   const priorMessages = allMessages.slice(0, -1).slice(-MAX_HISTORY);
   const currentMessage = allMessages[allMessages.length - 1];
@@ -373,7 +347,6 @@ async function buildConversation(message, userId, currentImages, currentRefs) {
     conversation.push(replyContext);
   }
 
-  // Render the current turn with inline images.
   const currentText = textFromParts(currentMessage?.parts);
   if (currentImages.length) {
     conversation.push({
@@ -406,8 +379,6 @@ function textFromParts(parts) {
     .trim();
 }
 
-// Older messages collapse to a single string. Image parts become placeholders
-// the model can resolve via getImage.
 function renderHistoryMessage(msg, imageMetaByIndex, now) {
   if (!msg || !Array.isArray(msg.parts)) {
     return { role: msg?.role || "user", content: "" };
@@ -437,7 +408,6 @@ function getImageAttachments(message) {
     .filter((attachment) => {
       const type = attachment.contentType || "";
       if (type.startsWith("image/")) return true;
-      // Fallback for attachments without a contentType set by Discord.
       return /\.(png|jpe?g|gif|webp)$/i.test(attachment.name || "");
     })
     .slice(0, MAX_IMAGE_ATTACHMENTS)
@@ -525,12 +495,42 @@ function getBestAnswer(result) {
   return "I could not generate a response.";
 }
 
-function buildSystemPrompt(persona, personaPrompt, hasStoredImages = false) {
+function buildSystemPrompt(
+  persona,
+  personaPrompt,
+  hasStoredImages = false,
+  currentContext = null,
+) {
   const sections = [BASE_SYSTEM_PROMPT];
 
   if (hasStoredImages) {
     sections.push(
       "Earlier images appear as `[image #N — mediaType, Xmin ago]` placeholders. If the user refers to an earlier image or you need to re-examine one, call the `getImage` tool with that index. The current turn's images are already attached and need no tool call.",
+    );
+  }
+
+  // Inject user interaction properties so the model can freely match reactions to message tone
+  if (currentContext) {
+    sections.push(
+      `[Discord Direct Conversation Context]\n` +
+        `- Channel ID: ${currentContext.channelId}\n` +
+        `- Target Message ID: ${currentContext.messageId}\n` +
+        `- Interaction Hook: ${currentContext.interactionType}\n\n` +
+        `[Autonomous Reactions Instructions]:\n` +
+        `You are explicitly authorized to use the 'react' tool autonomously on the incoming user message if its tone, content, or context warrants an emotional reaction. Read the sentiment carefully:\n` +
+        `- If the message is genuinely funny, humorous, or witty → React with '😂', '🤣', or '💀'.\n` +
+        `- If the message contains obvious flame bait, trolling, or friendly sarcasm → React with '🤨', '🤡', or '😡'.\n` +
+        `- If the message shows hype, an achievement, or excellent news → React with '🔥', '🚀', or '🙌'.\n` +
+        `- If the message is sad, unfortunate, moving, or a "feels bad man" moment → React with '😭', '🥺', or '💔'.\n` +
+        `- If the message is highly technical, detailed, a deep-dive, or full of "nerd" energy → React with '🤓', '🧠', or '📝'.\n` +
+        `- If the message is completely bizarre, confusing, or leaves you speechless → React with '🤔', '❓', or '🫠'.\n` +
+        `- If the message mentions a catastrophic bug, a production crash, or scary code → React with '😱', '😨', or '💥'.\n` +
+        `- If the message is wholesome, genuinely kind, or expresses warm appreciation → React with '❤️', '🥰', or '✨'.\n` +
+        `- If the message expresses sheer frustration, annoying blockers, or unhelpful errors → React with '😤', '🤬', or '💢'.\n` +
+        `- If the message talks about being burnt out, working late hours, or being completely exhausted → React with '😴', '😮‍💨', or '🥱'.\n` +
+        `- If the user shares something highly unexpected, wild gossip, or mind-blowing tech news → React with '🤯', '😲', or '👁️‍🗨️'.\n` +
+        `- If it's a routine query or structured setup, you can skip the tool call entirely.\n` +
+        `Execute the 'react' tool dynamically before finalizing your text response when applicable.`,
     );
   }
 
@@ -545,8 +545,6 @@ function buildSystemPrompt(persona, personaPrompt, hasStoredImages = false) {
   return sections.join("\n\n");
 }
 
-// Collects successful stock tool calls, re-fetches full data (incl. chart
-// series) for each unique symbol, and sends a rendered price card.
 async function sendStockCards(message, result) {
   const aggregateToolResults = [
     ...(Array.isArray(result?.toolResults) ? result.toolResults : []),
@@ -570,7 +568,7 @@ async function sendStockCards(message, result) {
       seen.add(symbol);
       return true;
     })
-    .slice(0, 3); // Cap attachments per response.
+    .slice(0, 3);
 
   for (const symbol of symbols) {
     try {

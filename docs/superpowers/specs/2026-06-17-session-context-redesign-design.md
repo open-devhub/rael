@@ -58,8 +58,8 @@ Session {
 - `tokensUsed` is incremented by `result.totalUsage.totalTokens` after every successful model call (same value already passed to `recordUsage` for lifetime stats).
 - **Pre-call check:** before invoking the model, if `tokensUsed >= 20_000`, reply with:
   > "Session limit reached (20,000 tokens). Your session will reset after 1 hour of inactivity (around HH:MM)."
-  …where HH:MM is `lastActivityAt + 1 hour` formatted in the user's local time (or UTC if locale is unavailable). Do NOT call the model.
-- Because the check is post-hoc, the call that *crosses* 20k is allowed; the next one is blocked. This is acceptable — no local tokenizer dependency is introduced.
+  > …where HH:MM is `lastActivityAt + 1 hour` formatted in the user's local time (or UTC if locale is unavailable). Do NOT call the model.
+- Because the check is post-hoc, the call that _crosses_ 20k is allowed; the next one is blocked. This is acceptable — no local tokenizer dependency is introduced.
 - The user cannot manually reset. The only way past the cap is to stop messaging for 1 hour.
 
 ## Object-style multimodal messages
@@ -150,14 +150,14 @@ Current prompt (`BASE_SYSTEM_PROMPT` at `askai.js:64-71`) instructs the model to
 
 ## What gets removed
 
-| File / location | Action |
-|---|---|
-| `src/commands/ai/resetai.js` | Delete file |
-| `src/tools/reset-context.js` | Delete file |
-| `src/commands/ai/askai.js:137-150` (reset/clear typed-phrase branch) | Delete block |
-| `src/commands/ai/askai.js` `resetContext` import and tool registration | Delete |
-| `src/utils/chat-context.js` `clearUserContext` export | Delete (the new module simply does not export it) |
-| `BASE_SYSTEM_PROMPT` resetContext instruction | Delete that sentence |
+| File / location                                                        | Action                                            |
+| ---------------------------------------------------------------------- | ------------------------------------------------- |
+| `src/commands/ai/resetai.js`                                           | Delete file                                       |
+| `src/tools/reset-context.js`                                           | Delete file                                       |
+| `src/commands/ai/askai.js:137-150` (reset/clear typed-phrase branch)   | Delete block                                      |
+| `src/commands/ai/askai.js` `resetContext` import and tool registration | Delete                                            |
+| `src/utils/chat-context.js` `clearUserContext` export                  | Delete (the new module simply does not export it) |
+| `BASE_SYSTEM_PROMPT` resetContext instruction                          | Delete that sentence                              |
 
 The `,ai` command's `getReplyContext` helper (Discord reply-to-bot one-shot context) is unchanged. It injects a single ephemeral assistant message for the current turn only and does not touch `Session.messages`.
 

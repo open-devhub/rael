@@ -34,7 +34,10 @@ async function load() {
     try {
       const raw = await fs.readFile(STATS_FILE, "utf-8");
       const parsed = JSON.parse(raw);
-      store = parsed && typeof parsed === "object" && parsed.users ? parsed : { users: {} };
+      store =
+        parsed && typeof parsed === "object" && parsed.users
+          ? parsed
+          : { users: {} };
     } catch (err) {
       if (err?.code !== "ENOENT") {
         console.error("Failed to read user-stats file, starting fresh:", err);
@@ -81,7 +84,8 @@ function dayKey(date = new Date()) {
  */
 export async function recordUsage(userId, profile, tokens) {
   if (!userId) return;
-  const safeTokens = Number.isFinite(tokens) && tokens > 0 ? Math.round(tokens) : 0;
+  const safeTokens =
+    Number.isFinite(tokens) && tokens > 0 ? Math.round(tokens) : 0;
 
   const state = await load();
   const existing = state.users[userId] || {

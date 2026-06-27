@@ -10,9 +10,18 @@ let fontsRegistered = false;
 function ensureFonts() {
   if (fontsRegistered) return;
   try {
-    GlobalFonts.registerFromPath(path.join(FONTS_DIR, "Inter-Regular.ttf"), "Inter");
-    GlobalFonts.registerFromPath(path.join(FONTS_DIR, "Inter-SemiBold.ttf"), "InterSemiBold");
-    GlobalFonts.registerFromPath(path.join(FONTS_DIR, "Inter-Bold.ttf"), "InterBold");
+    GlobalFonts.registerFromPath(
+      path.join(FONTS_DIR, "Inter-Regular.ttf"),
+      "Inter",
+    );
+    GlobalFonts.registerFromPath(
+      path.join(FONTS_DIR, "Inter-SemiBold.ttf"),
+      "InterSemiBold",
+    );
+    GlobalFonts.registerFromPath(
+      path.join(FONTS_DIR, "Inter-Bold.ttf"),
+      "InterBold",
+    );
     fontsRegistered = true;
   } catch (err) {
     console.error("Failed to register Inter fonts for stock card:", err);
@@ -51,7 +60,9 @@ function formatPrice(value, currency) {
     maximumFractionDigits: 2,
   });
   const symbol = currency === "USD" ? "$" : "";
-  return symbol ? `${symbol}${formatted}` : `${formatted} ${currency || ""}`.trim();
+  return symbol
+    ? `${symbol}${formatted}`
+    : `${formatted} ${currency || ""}`.trim();
 }
 
 function truncate(ctx, text, maxWidth) {
@@ -139,11 +150,12 @@ export function renderStockCard(opts) {
   const ctx = canvas.getContext("2d");
 
   const isUp = (Number(opts.change) || 0) >= 0;
-  const accent = (Number(opts.change) || 0) === 0
-    ? COLORS.neutral
-    : isUp
-      ? COLORS.up
-      : COLORS.down;
+  const accent =
+    (Number(opts.change) || 0) === 0
+      ? COLORS.neutral
+      : isUp
+        ? COLORS.up
+        : COLORS.down;
 
   // Background + subtle border.
   ctx.fillStyle = COLORS.background;
@@ -181,7 +193,11 @@ export function renderStockCard(opts) {
   ctx.textAlign = "right";
   ctx.fillStyle = COLORS.text;
   ctx.font = "60px InterBold";
-  ctx.fillText(formatPrice(opts.price, opts.currency), WIDTH - padX, topY + 110);
+  ctx.fillText(
+    formatPrice(opts.price, opts.currency),
+    WIDTH - padX,
+    topY + 110,
+  );
 
   const sign = isUp ? "+" : "";
   const changeText = `${sign}${(Number(opts.change) || 0).toFixed(2)} (${sign}${(Number(opts.percentChange) || 0).toFixed(2)}%)`;
@@ -191,7 +207,12 @@ export function renderStockCard(opts) {
   ctx.textAlign = "left";
 
   // ---- Chart ----
-  drawChart(ctx, opts.series, { x: padX, y: 300, w: WIDTH - padX * 2, h: 220 }, accent);
+  drawChart(
+    ctx,
+    opts.series,
+    { x: padX, y: 300, w: WIDTH - padX * 2, h: 220 },
+    accent,
+  );
 
   // ---- Divider + footer ----
   const footerY = 560;

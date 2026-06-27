@@ -47,7 +47,10 @@ const { imageRefs } = appendUserTurn(UID, {
   text: "what is this?",
   images: [{ bytes: fakePng, mime: "image/png" }],
 });
-assert(imageRefs.length === 1 && imageRefs[0].index === 1, "image assigned index 1");
+assert(
+  imageRefs.length === 1 && imageRefs[0].index === 1,
+  "image assigned index 1",
+);
 
 const img = getImageBytes(UID, 1);
 assert(!!img && img.mime === "image/png", "getImageBytes returns stored image");
@@ -86,7 +89,10 @@ const bufActive = await renderSessionCard({
   overBudget: snap.overBudget,
 });
 writeFileSync("scripts/out/session-active.png", bufActive);
-assert(bufActive.length > 1000 && bufActive[0] === 0x89, "active card renders to PNG");
+assert(
+  bufActive.length > 1000 && bufActive[0] === 0x89,
+  "active card renders to PNG",
+);
 
 const bufIdle = await renderSessionCard({
   displayName: "Smoke Tester",
@@ -102,7 +108,10 @@ const bufIdle = await renderSessionCard({
   overBudget: false,
 });
 writeFileSync("scripts/out/session-idle.png", bufIdle);
-assert(bufIdle.length > 1000 && bufIdle[0] === 0x89, "idle card renders to PNG");
+assert(
+  bufIdle.length > 1000 && bufIdle[0] === 0x89,
+  "idle card renders to PNG",
+);
 
 // 8. Mid-fill card for visual range.
 const bufMid = await renderSessionCard({

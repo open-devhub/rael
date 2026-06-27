@@ -37,10 +37,7 @@ function buildModelEmbed(models, activeModel) {
 
 function buildModelSelect(models, activeModelId, userId, disabled = false) {
   const options = models.map((model) => ({
-    label:
-      model.id === activeModelId
-        ? `* ${model.name}`
-        : model.name,
+    label: model.id === activeModelId ? `* ${model.name}` : model.name,
     value: model.id,
     description: `${model.provider} - ${model.description}`.slice(0, 100),
   }));

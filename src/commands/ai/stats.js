@@ -4,7 +4,7 @@ import { getUserStats } from "../../utils/user-stats.js";
 
 export default {
   name: "stats",
-    description: "Show your personal AI usage stats card",
+  description: "Show your personal AI usage stats card",
   aliases: ["mystats"],
   callback: async (client, message) => {
     try {
@@ -17,7 +17,9 @@ export default {
 
       if (!stats.hasData) {
         const who =
-          target.id === message.author.id ? "You have" : `${target.username} has`;
+          target.id === message.author.id
+            ? "You have"
+            : `${target.username} has`;
         await message.reply(
           `${who} no AI usage recorded yet. Ask me something with \`,\` or \`$ai\` and your stats will start tracking.`,
         );

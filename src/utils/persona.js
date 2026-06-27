@@ -20,7 +20,9 @@ export function listAvailablePersonas() {
 
 export function getUserPersona(userId) {
   const selectedPersonaId = userPersonaState.get(userId);
-  const selectedPersona = selectedPersonaId ? getPersonaById(selectedPersonaId) : null;
+  const selectedPersona = selectedPersonaId
+    ? getPersonaById(selectedPersonaId)
+    : null;
   return selectedPersona || getDefaultPersona();
 }
 

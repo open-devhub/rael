@@ -1,13 +1,12 @@
 import { createGroq } from "@ai-sdk/groq";
 import Exa from "exa-js";
-import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 export const openRouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY,
 });
 export const groq = createGroq({
   apiKey: process.env.GROQ_API_KEY,
 });
-
 
 let exaClient;
 
