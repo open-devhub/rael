@@ -11,8 +11,7 @@ export default async (client: Client, message: Message) => {
 
   if (!message.content.startsWith(aiModePrefix)) return;
 
-const content = message.content.slice(aiModePrefix.length).trim();
-
+  const content = message.content.slice(aiModePrefix.length).trim();
 
   const args = content?.split(/ +/);
 

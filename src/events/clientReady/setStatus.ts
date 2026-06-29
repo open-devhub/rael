@@ -1,5 +1,6 @@
 import { ActivityType, Client, type PresenceData } from "discord.js";
 
+let presenceInterval: NodeJS.Timeout | null = null;
 export default (client: Client) => {
   const opts: PresenceData = {
     activities: [
@@ -11,7 +12,10 @@ export default (client: Client) => {
     status: "online",
   };
   client?.user?.setPresence(opts);
-  setInterval(
+  if (presenceInterval) {
+    clearInterval(presenceInterval);
+  }
+  presenceInterval = setInterval(
     () => {
       client?.user?.setPresence(opts);
     },
