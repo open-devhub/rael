@@ -1,4 +1,5 @@
 import { Client, IntentsBitField } from "discord.js";
+import "dotenv/config";
 import eventHandler from "./handlers/eventHandler.ts";
 
 export const client = new Client({

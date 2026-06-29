@@ -2,7 +2,7 @@ import { EmbedBuilder } from "discord.js";
 import path, { join } from "path";
 import { fileURLToPath } from "url";
 import type { CommandCallbackOpts } from "../../types/command.ts";
-import getAllFiles from "../../utils/getAllFiles.js";
+import getAllFiles from "../../utils/getAllFiles.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -23,9 +23,7 @@ export default {
     const categoriesData = await Promise.all(
       prefixCommandsCategories.map(async (category) => {
         const categoryName = path.basename(category);
-        const commandFiles = getAllFiles(category).filter(
-          (file) => !file.endsWith("help.js"),
-        );
+        const commandFiles = getAllFiles(category);
         const commands = await Promise.all(
           commandFiles.map(async (file) => {
             let rel = path.relative(__dirname, file).replace(/\\/g, "/");

@@ -1,4 +1,5 @@
 import type { Client, Message } from "discord.js";
+import "dotenv/config";
 import path from "path";
 import { fileURLToPath } from "url";
 import data from "../../../config.json" with { type: "json" };

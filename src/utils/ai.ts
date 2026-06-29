@@ -1,5 +1,6 @@
 import { createGroq } from "@ai-sdk/groq";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import "dotenv/config";
 import { Exa } from "exa-js";
 
 export const openRouter = createOpenRouter({
