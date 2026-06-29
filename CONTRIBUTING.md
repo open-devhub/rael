@@ -1,6 +1,6 @@
-# 🤝 Contributing to Pawgrammer Bot
+# 🤝 Contributing to Rael
 
-Thank you for considering contributing to **Pawgrammer Bot**!  
+Thank you for considering contributing to **Rael**!
 We welcome all kinds of contributions, whether it's fixing bugs, adding new features, improving documentation, or helping with community support.
 
 ## 📋 Contribution Guidelines
@@ -10,8 +10,8 @@ We welcome all kinds of contributions, whether it's fixing bugs, adding new feat
 - Fork the repository to your GitHub account.
 - Clone your fork locally:
   ```bash
-  git clone https://github.com/your-username/pawgrammerbot.git
-  cd pawgrammerbot
+  git clone https://github.com/your-username/rael.git
+  cd rael
   ```
 
 ### 2. Create a Branch
@@ -68,7 +68,7 @@ All contributors will be recognized in the project and may receive special roles
 By contributing to this project, you agree that:
 
 - Your contributions will be licensed under the **DevHub Source-Available License (DSAL)**
-- DevHub may use, modify, and distribute your contributions as part of Pawgrammer Bot
-- You do not gain any ownership, commercial, or hosting rights to Pawgrammer Bot by contributing
+- DevHub may use, modify, and distribute your contributions as part of Rael
+- You do not gain any ownership, commercial, or hosting rights to Rael by contributing
 
-_Thank you for taking time to contribute to Pawgrammer Bot ✨_
+_Thank you for taking time to contribute to Rael ✨_

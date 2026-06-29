@@ -1,7 +1,7 @@
 <br />
 <div align="center">
 
-  <img src="./src/assets/icon.png" alt="Quantum Theme" width="200" height="200" />
+  <img src="./assets/icon.png" alt="Rael" width="200" height="200" />
 
   <p align="center" style="margin-top: 12px;">
     <strong><small>CONVERSATION MEETS CAPABILITY</small></strong>
@@ -15,16 +15,18 @@ Rael is an AI-powered Discord bot built for natural conversation, multi-model fl
 
 > [!NOTE]
 >
-> ## What's New in v1
+> ## What's New in v2
 >
-> Rael v1 builds on the alpha foundation with the following additions:
+> Rael v2 focuses on a leaner, faster, and more reliable experience with a complete internal overhaul.
 >
-> - Vision support, allowing Rael to read and understand image attachments
-> - Model switching, letting users choose which AI model handles their requests
-> - Web search, giving Rael access to up to date information beyond its training data
-> - Live stock graphs, available directly through chat
-> - Token usage tracking with a clean, visual breakdown instead of raw numbers
->   The core prefix system and persona functionality from the alpha release remain, refined for consistency.
+> - Migrated the entire project to **TypeScript** and **Bun** for improved performance and maintainability
+> - Introduced automatic **model fallbacks** to keep requests running even when a provider is unavailable
+> - Reworked the conversation context pipeline for more consistent responses
+> - Reduced the base system prompt to improve efficiency and lower token usage
+> - Restructured the project's file and folder organization for a cleaner, more maintainable codebase
+> - Removed personas and stock cards to simplify the overall experience
+> - Removed DevHub-specific prompt information, making Rael more general-purpose
+> - Added automatic ping suppression to prevent unintended user or role mentions
 
 ## Usage
 
@@ -53,72 +55,30 @@ Example:
 ```
 $help
 $ping
-$persona list
-$resetai
+$usage
 ```
-
-## Commands Overview
-
-| Command   | Aliases                                  | Description                                  |
-| --------- | ---------------------------------------- | -------------------------------------------- |
-| `ai`      | `askai`                                  | Sends a prompt to the AI model               |
-| `persona` | `personaai`, `mode`, `character`         | Manage or view AI personas                   |
-| `model`   | `setmodel`, `models`                     | View or switch the active AI model           |
-| `resetai` | `aiclear`, `clearai`, `aireset`, `reset` | Clears AI conversation context               |
-| `stock`   | `stocks`, `chart`                        | Displays a live stock graph                  |
-| `usage`   | `tokens`, `tokenusage`                   | Displays token usage with a visual breakdown |
-| `help`    | none                                     | Displays available commands and usage        |
-| `ping`    | none                                     | Returns bot latency                          |
 
 ## AI Command Usage
 
-The AI system supports both prefixes:
+The AI system supports both prefixes and tagging:
 
 ```
 ,what is event loop in Node.js?
 $ai what is event loop in Node.js?
+@Rael what is event loop in Node.js?
 ```
 
 To reset context:
 
 ```
+$resetctx
+or
 $resetai
 or
-$ai reset
+$clearctx
 ```
 
 Resetting clears conversation history and restores default behavior.
-
-## Persona System
-
-The persona system allows users to adjust the AI's behavior and response style.
-
-Available subcommands:
-
-- `$persona list`
-  Displays all available personas.
-
-- `$persona current` / `status` / `now` / `active`
-  Shows the currently active persona.
-
-- `$persona set <name>` / `use <name>` / `switch <name>`
-  Switches to a selected persona.
-
-- `$persona reset` / `clear`
-  Restores the default persona and clears context.
-
-## Model Switching
-
-Rael supports multiple underlying AI models, allowing users to pick the one that best fits their needs, whether prioritizing speed or depth of response.
-
-- `$model list`
-  Displays all available models.
-
-- `$model current`
-  Shows the currently active model.
-
-- `$model set <name>` / `use <name>`
-  Switches to a selected model.
 
 ## Vision
 
@@ -128,16 +88,12 @@ Rael can read and understand images sent as attachments. Send an image along wit
 
 Rael can search the web when you ask it to do so, to provide up to date information when needed, rather than relying solely on its training data.
 
-## Stock Graphs
-
-Rael can pull up live stock charts directly in chat, just ask for it.
-
 ## Token Usage Tracking
 
 Users can view their token usage at any time through a clean, image based visual breakdown rather than plain numbers.
 
 ```
-$stats
+$usage
 ```
 
 ## Design Philosophy
@@ -146,9 +102,8 @@ Rael is designed to:
 
 - Provide fast and reliable access to AI-assisted conversation
 - Support multiple models and personas without complicating the interface
-- Extend usefulness beyond chat through vision, search, and live data
+- Extend usefulness beyond chat and search
 - Maintain a minimal and predictable command system
-- Present usage and data visually wherever it improves clarity
 
 ## License
 
