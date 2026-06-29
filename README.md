@@ -1,7 +1,7 @@
 <br />
 <div align="center">
 
-  <img src="./src/assets/icon.png" alt="Quantum Theme" width="200" height="200" />
+  <img src="./assets/icon.png" alt="Rael" width="200" height="200" />
 
   <p align="center" style="margin-top: 12px;">
     <strong><small>CONVERSATION MEETS CAPABILITY</small></strong>

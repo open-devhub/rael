@@ -1,0 +1,1 @@
+export const HOURLY_TOKEN_LIMIT = 100_000;

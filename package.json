@@ -2,27 +2,28 @@
   "name": "rael",
   "version": "1.1.1",
   "description": "AI-powered Discord bot built for natural conversation, multi-model flexibility, and useful utilities like vision, web search, live stock data, and usage tracking",
-  "main": "src/index.js",
+  "main": "src/index.ts",
   "type": "module",
   "scripts": {
-    "start": "node .",
-    "dev": "node --watch .",
-    "format": "prettier --write ."
+    "start": "bun src/index.ts",
+    "dev": "bun --watch src/index.ts",
+    "format": "prettier --write .",
+    "lint": "eslint"
   },
   "keywords": [],
   "author": "Caleb Ephrem",
   "license": "GPL-3.0-only",
   "dependencies": {
-    "@ai-sdk/groq": "^3.0.35",
-    "@napi-rs/canvas": "^1.0.0",
-    "@openrouter/ai-sdk-provider": "^2.9.0",
-    "ai": "^6.0.168",
-    "discord.js": "^14.25.0",
+    "@ai-sdk/groq": "^4.0.1",
+    "@napi-rs/canvas": "^1.0.1",
+    "@openrouter/ai-sdk-provider": "^2.10.0",
+    "@types/node": "^26.0.1",
+    "ai": "^7.0.4",
+    "discord.js": "^14.26.4",
     "dotenv": "^17.4.2",
-    "exa-js": "^2.11.0",
+    "exa-js": "^2.15.0",
     "latex-to-unicode": "^0.1.0",
-    "turndown": "^7.2.2",
-    "zod": "^3.25.76"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
