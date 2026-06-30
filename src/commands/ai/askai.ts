@@ -170,6 +170,8 @@ async function executeAiRequest(
       });
 
       success = true;
+
+      // console.log({ provider, modelId });
     } catch (error) {
       console.error(
         `[FAIL] Model [${isVisionRequest ? "Vision Model" : modelConfig.name}] hit an exception or quota limit. Error:`,
@@ -186,4 +188,8 @@ async function executeAiRequest(
   }
 
   return success ? result : null;
+}
+
+export function resetIndex() {
+  CURRENT_MODEL_INDEX = 0;
 }
