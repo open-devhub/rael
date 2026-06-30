@@ -36,7 +36,7 @@ async function loadUsage(): Promise<UsageData> {
 async function saveUsage(data: UsageData): Promise<void> {
   usageCache = data;
   await fs.mkdir(path.dirname(USAGE_FILE), { recursive: true });
-  await fs.writeFile(USAGE_FILE, JSON.stringify(data, null, 2), "utf-8");
+  await fs.writeFile(USAGE_FILE, JSON.stringify(data), "utf-8");
 }
 
 export async function getUsage(userId: string): Promise<number> {

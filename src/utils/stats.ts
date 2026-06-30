@@ -53,7 +53,7 @@ async function saveStore(): Promise<void> {
   isWriting = true;
   try {
     await fs.mkdir(DATA_DIR, { recursive: true });
-    await fs.writeFile(STATS_FILE, JSON.stringify(store, null, 2), "utf-8");
+    await fs.writeFile(STATS_FILE, JSON.stringify(store), "utf-8");
   } catch (err) {
     console.error("Failed to save stats.json:", err);
   } finally {
