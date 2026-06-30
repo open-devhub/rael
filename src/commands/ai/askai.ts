@@ -101,7 +101,9 @@ export default {
         }),
       };
 
-      await recordUsage(userId, profile, tokensUsedByModel);
+      recordUsage(userId, profile, tokensUsedByModel).catch((err) => {
+        console.error("[Stats] Failed to record usage:", err);
+      });
     } else {
       await message.reply(
         "Sorry, I encountered an issue processing your request right now.",
