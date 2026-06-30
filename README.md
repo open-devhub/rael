@@ -56,6 +56,7 @@ Example:
 $help
 $ping
 $usage
+$stats
 ```
 
 ## AI Command Usage

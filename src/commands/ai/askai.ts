@@ -9,6 +9,7 @@ import { openRouter } from "../../utils/ai.ts";
 import { addToContext, getContext } from "../../utils/context.ts";
 import { pretty } from "../../utils/pretty.ts";
 import { sanitizeForPrompt } from "../../utils/sanitize.ts";
+import { recordUsage } from "../../utils/stats.ts";
 import { canUseAI, formatTimeLeft, setUsage } from "../../utils/usage.ts";
 
 export let CURRENT_MODEL_INDEX = 0;
@@ -82,10 +83,25 @@ export default {
       await message.reply({
         content: pretty(result.text),
       });
+
+      /// token usage
       const tokensUsedByModel = result.usage?.totalTokens ?? 0;
       if (tokensUsedByModel > 0) {
         await setUsage(userId, tokensUsedByModel);
       }
+
+      // stats
+
+      const profile = {
+        username: message.author.username,
+        displayName: message.author.displayName,
+        avatar: message.author.displayAvatarURL({
+          extension: "png",
+          size: 256,
+        }),
+      };
+
+      await recordUsage(userId, profile, tokensUsedByModel);
     } else {
       await message.reply(
         "Sorry, I encountered an issue processing your request right now.",
