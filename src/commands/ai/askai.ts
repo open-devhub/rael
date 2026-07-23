@@ -62,13 +62,7 @@ export default {
     const history = getContext(userId);
     addToContext(userId, "user", question);
 
-    let currentUserContent: any;
-
-    if (imageUrl) {
-      currentUserContent = contentBlocks;
-    } else {
-      currentUserContent = question;
-    }
+    const currentUserContent = imageUrl ? contentBlocks : question;
 
     const messages = [
       ...history.map((msg) => ({
@@ -78,12 +72,24 @@ export default {
       { role: "user" as const, content: currentUserContent },
     ];
 
-    const result = await executeAiRequest(
-      contentBlocks,
-      systemPrompt,
-      !!imageUrl,
-      messages,
-    );
+    let result = await executeAiRequest(systemPrompt, !!imageUrl, messages);
+
+    if (!result?.text && imageUrl && question) {
+      const fallbackMessages = [
+        ...history.map((msg) => ({
+          role: msg.role,
+          content: msg.content,
+        })),
+        { role: "user" as const, content: question },
+      ];
+
+      result = await executeAiRequest(
+        systemPrompt +
+          `\n\n(Note: an image was attached but could not be processed. Answer based on the text only, and briefly mention you couldn't view the image.)`,
+        false,
+        fallbackMessages,
+      );
+    }
 
     if (result?.text) {
       addToContext(userId, "assistant", result.text);
@@ -158,66 +164,84 @@ function buildContentBlocks(
 }
 
 async function executeAiRequest(
-  contentBlocks: any[],
   systemPrompt: string,
   isVisionRequest: boolean,
-  messages?: any[],
+  messages: any[],
 ) {
-  let attempts = 0;
-  let success = false;
-  let result = null;
+  if (isVisionRequest) {
+    for (let i = 0; i < 2; i++) {
+      try {
+        const result = await generateText({
+          model: groq(VISION_MODEL_ID),
+          system: systemPrompt,
+          messages,
+          temperature: 0.9,
+          maxOutputTokens: 1024,
+          topP: 1,
+          stopWhen: stepCountIs(5),
+          tools,
+          toolChoice: "auto",
+        });
 
-  while (attempts < MODELS.length && !success) {
-    const modelConfig = MODELS[CURRENT_MODEL_INDEX];
-
-    if (!modelConfig || !modelConfig.id) {
-      CURRENT_MODEL_INDEX = (CURRENT_MODEL_INDEX + 1) % MODELS.length;
-      attempts++;
-      continue;
+        if (result.text) return result;
+        console.error("Vision model returned no text, attempt", i + 1);
+      } catch (error) {
+        console.error("Vision model exception, attempt", i + 1, error);
+      }
     }
+    return null;
+  }
+
+  const startIndex = CURRENT_MODEL_INDEX;
+  const tried = new Set<number>();
+  let lastGoodIndex: number | null = null;
+
+  for (let step = 0; step < MODELS.length; step++) {
+    const index = (startIndex + step) % MODELS.length;
+    if (tried.has(index)) continue;
+    tried.add(index);
+
+    const modelConfig = MODELS[index];
+    if (!modelConfig || !modelConfig.id) continue;
 
     try {
-      const modelId = isVisionRequest
-        ? VISION_MODEL_ID
-        : (modelConfig.id as string);
+      const provider = modelConfig.provider === "groq" ? groq : openRouter;
 
-      const provider = isVisionRequest
-        ? groq
-        : modelConfig.provider === "groq"
-          ? groq
-          : openRouter;
-
-      result = await generateText({
-        model: provider(modelId),
+      const result = await generateText({
+        model: provider(modelConfig.id as string),
         system: systemPrompt,
-        messages: messages || [{ role: "user", content: contentBlocks }],
+        messages,
         temperature: 0.9,
         maxOutputTokens: 1024,
         topP: 1,
-        stopWhen: stepCountIs(3),
-        tools: tools,
+        stopWhen: stepCountIs(5),
+        tools,
         toolChoice: "auto",
       });
 
-      success = true;
-
-      // console.log({ modelId, provider });
-    } catch (error) {
-      console.error(
-        `[FAIL] Model [${isVisionRequest ? "Vision Model" : modelConfig.name}] hit an exception or quota limit. Error:`,
-        error,
-      );
-
-      if (isVisionRequest) {
-        break;
+      if (!result.text) {
+        console.error(
+          `Model [${modelConfig.name}] returned no text, trying next.`,
+        );
+        continue;
       }
 
-      CURRENT_MODEL_INDEX = (CURRENT_MODEL_INDEX + 1) % MODELS.length;
-      attempts++;
+      lastGoodIndex = index;
+      CURRENT_MODEL_INDEX = (index + 1) % MODELS.length;
+      return result;
+    } catch (error) {
+      console.error(
+        `Model [${modelConfig.name}] hit an exception or quota limit. Error:`,
+        error,
+      );
     }
   }
 
-  return success ? result : null;
+  if (lastGoodIndex === null) {
+    CURRENT_MODEL_INDEX = (startIndex + 1) % MODELS.length;
+  }
+
+  return null;
 }
 
 export function resetIndex() {

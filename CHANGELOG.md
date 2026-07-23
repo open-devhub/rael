@@ -1,6 +1,14 @@
 # Change Log
 
-## `v2.0.0` - 29/06/2026
+## `v2.0.1` - 2026-07-23
+
+### Fixed
+
+- `/askai` (`, <question>`) no longer shows a generic error when a model succeeds but returns no text (e.g. stops after a tool call). It now falls back to the next model instead.
+- Image questions retry as text-only if the vision model fails, instead of failing outright.
+- Fixed a race condition where concurrent `askai` command requests could interfere with each other's model fallback.
+
+## `v2.0.0` - 2026-06-29
 
 ### Added
 
@@ -23,13 +31,13 @@
 
 - Suppressed ping/mention behavior to prevent unintended user or role tagging
 
-## `v1.1.1` - 17/06/2026
+## `v1.1.1` - 2026-06-17
 
 ### Changed
 
 - Refine bot system prompt for tone and accuracy
 
-## `v1.1.0` - 17/06/2026
+## `v1.1.0` - 2026-06-17
 
 ### Added
 
@@ -45,7 +53,7 @@
 - Removed redundant `clearUserContext` calls
 - Removed large instruction block to reduce token usage
 
-## `v1.0.0` - 16/06/2026
+## `v1.0.0` - 2026-06-16
 
 ### Added
 
