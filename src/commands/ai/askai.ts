@@ -127,13 +127,13 @@ export default {
 };
 
 function getAttachmentData(message: any) {
-  const attachment = message.attachments?.first();
-  const mimeType = attachment?.contentType || "";
-  const isImage = mimeType.startsWith("image/");
+  const attachment = message.attachments?.find((a: any) =>
+    a.contentType?.startsWith("image/"),
+  );
 
   return {
-    imageUrl: isImage ? attachment.url : null,
-    mimeType,
+    imageUrl: attachment?.url ?? null,
+    mimeType: attachment?.contentType ?? "",
   };
 }
 
@@ -184,9 +184,9 @@ async function executeAiRequest(
         });
 
         if (result.text) return result;
-        console.error("Vision model returned no text, attempt", i + 1);
+        console.error("[FAIL] Vision model returned no text, attempt", i + 1);
       } catch (error) {
-        console.error("Vision model exception, attempt", i + 1, error);
+        console.error("[FAIL] Vision model exception, attempt", i + 1, error);
       }
     }
     return null;
@@ -221,7 +221,7 @@ async function executeAiRequest(
 
       if (!result.text) {
         console.error(
-          `Model [${modelConfig.name}] returned no text, trying next.`,
+          `[FAIL] Model [${modelConfig.name}] returned no text, trying next.`,
         );
         continue;
       }
@@ -231,7 +231,7 @@ async function executeAiRequest(
       return result;
     } catch (error) {
       console.error(
-        `Model [${modelConfig.name}] hit an exception or quota limit. Error:`,
+        `[FAIL] Model [${modelConfig.name}] hit an exception or quota limit. Error:`,
         error,
       );
     }
