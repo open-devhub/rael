@@ -13,6 +13,10 @@ import { sanitizeForPrompt } from "../../utils/sanitize.ts";
 import { recordUsage } from "../../utils/stats.ts";
 import { canUseAI, formatTimeLeft, setUsage } from "../../utils/usage.ts";
 
+// === FIXED INTERACTION CONFIGS ===
+import { Cache } from "../../utils/cache.ts";
+const semanticCache = new Cache();
+
 const processedMessages = new WeakSet<object>();
 
 type ChatMessages = ModelMessage[];
@@ -66,6 +70,22 @@ export default {
       }
 
       const history = getContext(userId);
+
+      const hasHistory = Array.isArray(history) && history.length > 0;
+      if (!hasHistory && !ctx) {
+        const cachedAnswer = await semanticCache.get(question);
+        if (cachedAnswer) {
+          console.log(`⚡ [Semantic Cache Hit] Found a close match for: "${question}"`);
+
+          addToContext(userId, "user", question);
+          addToContext(userId, "assistant", cachedAnswer);
+          
+          await message.reply({ content: pretty(cachedAnswer) });
+          return; 
+        }
+      }
+
+     
       addToContext(userId, "user", question);
 
       const messages: ChatMessages = [
@@ -82,6 +102,12 @@ export default {
           "All models are currently rate-limited or unavailable. Please try again in a bit.",
         );
         return;
+      }
+
+
+      if (!hasHistory && !ctx) {
+        await semanticCache.set(question, result.text);
+        console.log(` [ Cahe Stored] Saved new query mapping to local db.`);
       }
 
       addToContext(userId, "assistant", result.text);
