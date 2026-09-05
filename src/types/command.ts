@@ -7,5 +7,3 @@ export type CommandCallbackOpts = {
   args: string[];
   ctx: any;
 };
-
-export type SubcommandCallbackOpts = CommandCallbackOpts;

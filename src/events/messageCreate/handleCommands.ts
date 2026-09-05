@@ -1,12 +1,10 @@
 import type { Client, Message } from "discord.js";
-import "dotenv/config";
 import path from "path";
 import { fileURLToPath } from "url";
 import data from "../../../config.json" with { type: "json" };
 import getAllFiles from "../../utils/getAllFiles.ts";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const { prefixes, devs } = data;
 
@@ -40,7 +38,7 @@ export default async (client: Client, message: Message) => {
     );
 
     const args = message.content.slice(prefix.length).trim().split(/ +/);
-    const commandName = args?.shift()?.toLowerCase();
+    const commandName = args.shift()?.toLowerCase();
     const commandsPath = path.join(__dirname, "..", "..", "commands");
 
     const commandsCategories = getAllFiles(commandsPath, true);
@@ -70,7 +68,7 @@ export default async (client: Client, message: Message) => {
     if (commandObject.permissionsRequired?.length) {
       for (const permission of commandObject.permissionsRequired) {
         if (!message?.member?.permissions?.has(permission)) {
-          message.reply("Not enough permissions to run this command.");
+          await message.reply("Not enough permissions to run this command.");
           return;
         }
       }

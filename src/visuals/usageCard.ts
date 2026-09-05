@@ -1,4 +1,9 @@
-import { createCanvas, GlobalFonts, loadImage } from "@napi-rs/canvas";
+import {
+  createCanvas,
+  GlobalFonts,
+  loadImage,
+  type CanvasRenderingContext2D,
+} from "@napi-rs/canvas";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -44,7 +49,7 @@ const COLORS = {
 };
 
 function roundRectPath(
-  ctx: any,
+  ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
   w: number,
@@ -258,14 +263,6 @@ export async function renderUsageCard(opts: UsageCardOptions): Promise<Buffer> {
       value: opts.active ? formatDuration(opts.timeRemainingMs || 0) : "—",
       label: "session resets in",
     },
-    // {
-    //   value: opts.active ? String(opts.messageCount ?? 0) : "—",
-    //   label: "messages",
-    // },
-    // {
-    //   value: opts.active ? String(opts.imageCount ?? 0) : "—",
-    //   label: "images",
-    // },
   ];
 
   const colWidth = (WIDTH - padX * 2) / metrics.length;
