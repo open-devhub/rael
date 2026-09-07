@@ -75,17 +75,18 @@ export default {
       if (!hasHistory && !ctx) {
         const cachedAnswer = await semanticCache.get(question);
         if (cachedAnswer) {
-          console.log(`⚡ [Semantic Cache Hit] Found a close match for: "${question}"`);
+          console.log(
+            `⚡ [Semantic Cache Hit] Found a close match for: "${question}"`,
+          );
 
           addToContext(userId, "user", question);
           addToContext(userId, "assistant", cachedAnswer);
-          
+
           await message.reply({ content: pretty(cachedAnswer) });
-          return; 
+          return;
         }
       }
 
-     
       addToContext(userId, "user", question);
 
       const messages: ChatMessages = [
@@ -103,7 +104,6 @@ export default {
         );
         return;
       }
-
 
       if (!hasHistory && !ctx) {
         await semanticCache.set(question, result.text);
