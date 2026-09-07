@@ -14,7 +14,7 @@ import { recordUsage } from "../../utils/stats.ts";
 import { canUseAI, formatTimeLeft, setUsage } from "../../utils/usage.ts";
 
 // === FIXED INTERACTION CONFIGS ===
-import { Cache } from "../../utils/cache.ts";
+import { Cache } from "../../utils/Cache.ts";
 const semanticCache = new Cache();
 
 const processedMessages = new WeakSet<object>();
