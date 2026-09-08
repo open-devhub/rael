@@ -2,7 +2,7 @@ import { readdirSync } from "fs";
 import { join } from "path";
 
 export default (directory: string, foldersOnly = false) => {
-  let fileNames = [];
+  const fileNames = [];
 
   const files = readdirSync(directory, { withFileTypes: true });
 

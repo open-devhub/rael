@@ -6,7 +6,7 @@ export default {
   async execute({ client, message }: CommandCallbackOpts) {
     try {
       const ping = Date.now() - message.createdTimestamp;
-      message.reply(`Pong! ${ping}ms | WebSocket: ${client.ws.ping}ms`);
+      await message.reply(`Pong! ${ping}ms | WebSocket: ${client.ws.ping}ms`);
     } catch (err) {
       console.error(err);
     }

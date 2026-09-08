@@ -17,7 +17,7 @@ export default async (client: Client, message: Message) => {
 
   const content = message.content.slice(aiModePrefix.length).trim();
 
-  const args = content?.split(/ +/);
+  const args = content.split(/ +/);
 
   if (!content) {
     return message.reply("What's up?");

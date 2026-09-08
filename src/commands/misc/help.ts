@@ -36,15 +36,6 @@ export default {
         return `**${categoryName}**\n${commandsInCategory.join("\n")}`;
       }),
     );
-    // const quickAiHelp = [
-    //   "Quick AI:",
-    //   "`$ai <question>` Ask AI",
-    //   "`$ai reset` Clear your AI context",
-    //   "`$resetai` Alias for AI context reset",
-    //   "`$persona list` List available personas",
-    //   "`$persona set <name>` Switch persona",
-    //   "",
-    // ].join("\n");
 
     const helpText = `### Usage:\n\n\`$[cmd]\`\n### Available Commands:\n\n${categoriesData.join("\n\n")}`;
 

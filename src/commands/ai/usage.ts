@@ -11,6 +11,11 @@ export default {
   async execute({ message }: CommandCallbackOpts) {
     if (message.author.bot) return;
 
+    if (message.mentions?.users?.first()) {
+      await message.reply("You can only view your own usage.");
+      return;
+    }
+
     const userId = message.author.id;
     const displayName = message.author.displayName || message.author.username;
     const handle = `@${message.author.username}`;
@@ -38,10 +43,12 @@ export default {
 
     try {
       const buffer = await renderUsageCard(cardOptions);
-      const attachment = new AttachmentBuilder(buffer, { name: "usage.png" });
+      const attachment = new AttachmentBuilder(buffer, {
+        name: "usage.png",
+      });
       await message.reply({ files: [attachment] });
     } catch (err) {
-      console.error(err);
+      console.error("[Usage] Command error:", err);
       await message.reply("Couldn't generate usage card.");
     }
   },
