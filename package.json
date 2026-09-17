@@ -32,13 +32,17 @@
     "@napi-rs/canvas": "^1.0.1",
     "@openrouter/ai-sdk-provider": "^2.9.1",
     "ai": "^6.0.0",
+    "better-sqlite3": "^13.0.3",
     "discord.js": "^14.26.4",
     "dotenv": "^17.4.2",
     "exa-js": "^2.15.0",
+    "openai": "^7.10.0",
+    "sqlite-vec": "^0.1.9",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^24.0.15",
     "eslint": "^10.5.0",
     "globals": "^17.6.0",

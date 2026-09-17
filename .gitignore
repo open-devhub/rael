@@ -3,3 +3,5 @@ node_modules/
 data/
 dist/
 .npm/
+ai_cache.db
+ai_cache.db-journal
